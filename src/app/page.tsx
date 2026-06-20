@@ -7,7 +7,7 @@ import { Camera, Download, ImageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 export default function Home() {
-  const [url, setUrl] = useState('https://afdian.com/a/liuyuhe666')
+  const [url, setUrl] = useState('https://cloudflare.com')
   const [fullPage, setFullPage] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -68,7 +68,7 @@ export default function Home() {
                   required
                   value={url}
                   onChange={e => setUrl(e.target.value)}
-                  placeholder="https://afdian.com/a/liuyuhe666"
+                  placeholder="https://cloudflare.com"
                   className="min-w-0 flex-1 rounded-lg bg-kumo-control px-3.5 py-2.5 text-sm text-kumo-default ring ring-kumo-line transition-[box-shadow] outline-none placeholder:text-kumo-subtle focus:ring-[1.5px] focus:ring-kumo-focus"
                 />
                 <Button
@@ -82,7 +82,7 @@ export default function Home() {
                 </Button>
               </div>
               <Checkbox
-                label="截图完整滚动页面"
+                label="整页截图"
                 checked={fullPage}
                 onCheckedChange={setFullPage}
               />
