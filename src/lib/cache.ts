@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers'
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 
 /**
  * Tiny caching layer over the `CACHE` KV namespace. Browser Run calls (and the
@@ -13,6 +13,10 @@ const CACHE_VERSION = 'v1'
 export const HOUR = 60 * 60
 export const DAY = HOUR * 24
 
+function getCache() {
+  return getCloudflareContext().env.CACHE
+}
+
 /** Build a stable cache key from a namespace and an ordered set of params. */
 export function cacheKey(ns: string, params: Record<string, unknown>): string {
   const norm = Object.keys(params)
@@ -24,7 +28,7 @@ export function cacheKey(ns: string, params: Record<string, unknown>): string {
 
 export async function readJsonCache<T>(key: string): Promise<T | null> {
   try {
-    return (await env.CACHE.get(key, 'json')) as T | null
+    return (await getCache().get(key, 'json')) as T | null
   }
   catch {
     return null
@@ -37,7 +41,7 @@ export async function writeJsonCache(
   ttlSeconds: number,
 ): Promise<void> {
   try {
-    await env.CACHE.put(key, JSON.stringify(value), {
+    await getCache().put(key, JSON.stringify(value), {
       expirationTtl: ttlSeconds,
     })
   }
@@ -50,7 +54,7 @@ type BinaryHit = { body: ArrayBuffer, contentType: string }
 
 export async function readBinaryCache(key: string): Promise<BinaryHit | null> {
   try {
-    const { value, metadata } = await env.CACHE.getWithMetadata<{
+    const { value, metadata } = await getCache().getWithMetadata<{
       contentType?: string
     }>(key, 'arrayBuffer')
     if (!value)
@@ -72,7 +76,7 @@ export async function writeBinaryCache(
   ttlSeconds: number,
 ): Promise<void> {
   try {
-    await env.CACHE.put(key, body, {
+    await getCache().put(key, body, {
       expirationTtl: ttlSeconds,
       metadata: { contentType },
     })

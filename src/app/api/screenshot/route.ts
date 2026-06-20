@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { browser } from '@/lib/browser'
+import { getBrowser } from '@/lib/browser'
 import {
   cacheKey,
   DAY,
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const res = await browser.quickAction('screenshot', {
+    const res = await getBrowser().quickAction('screenshot', {
       url,
       viewport: { width: 1920, height: 1080 },
       screenshotOptions: { fullPage },

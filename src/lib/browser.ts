@@ -1,3 +1,5 @@
-import { env } from 'cloudflare:workers'
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 
-export const browser = env.BROWSER
+export function getBrowser() {
+  return getCloudflareContext().env.BROWSER
+}
