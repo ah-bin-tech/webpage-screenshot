@@ -4,7 +4,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-Read the documentation at https://opennext.js.org/cloudflare.
+Read the documentation at <https://opennext.js.org/cloudflare>.
 
 ## Develop
 
@@ -15,9 +15,10 @@ npm run dev
 # or similar package manager command
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open <http://localhost:3000> with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can start editing the page by modifying `app/page.tsx`.
+The page auto-updates as you edit the file.
 
 ## Preview
 

@@ -1,52 +1,175 @@
-import Image from "next/image";
+'use client'
+
+import { Checkbox } from '@cloudflare/kumo'
+import { Button } from '@cloudflare/kumo/components/button'
+import { LayerCard } from '@cloudflare/kumo/components/layer-card'
+import { Camera, Download, ImageIcon } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function Home() {
-	return (
-		<div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-			<main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-				<Image className="dark:invert" src="/next.svg" alt="Next.js logo" width={180} height={38} priority />
-				<ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-					<li className="mb-2 tracking-[-.01em]">
-						Get started by editing{" "}
-						<code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-							src/app/page.tsx
-						</code>
-						.
-					</li>
-					<li className="tracking-[-.01em]">Save and see your changes instantly.</li>
-				</ol>
+  const [url, setUrl] = useState('https://afdian.com/a/liuyuhe666')
+  const [fullPage, setFullPage] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [imgUrl, setImgUrl] = useState<string | null>(null)
+  const [ms, setMs] = useState<number | null>(null)
+  const lastObjectUrlRef = useRef<string | null>(null)
 
-				<div className="flex gap-4 items-center flex-col sm:flex-row">
-					<a
-						className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-						href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						Read our docs
-					</a>
-				</div>
-			</main>
-			<footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-				<a
-					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-					href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					<Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
-					Learn
-				</a>
-				<a
-					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-					href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					<Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
-					Go to nextjs.org →
-				</a>
-			</footer>
-		</div>
-	);
+  useEffect(() => {
+    return () => {
+      if (lastObjectUrlRef.current)
+        URL.revokeObjectURL(lastObjectUrlRef.current)
+    }
+  }, [])
+
+  async function capture(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    const started = performance.now()
+    try {
+      const res = await fetch('/api/screenshot', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ url, fullPage }),
+      })
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as {
+          error?: string
+        } | null
+        throw new Error(body?.error ?? `Request failed (${res.status})`)
+      }
+      const blob = await res.blob()
+      if (lastObjectUrlRef.current)
+        URL.revokeObjectURL(lastObjectUrlRef.current)
+      const objectUrl = URL.createObjectURL(blob)
+      lastObjectUrlRef.current = objectUrl
+      setImgUrl(objectUrl)
+      setMs(Math.round(performance.now() - started))
+    }
+    catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setImgUrl(null)
+    }
+    finally {
+      setLoading(false)
+    }
+  }
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-between p-24">
+      <div className="flex flex-col gap-5 w-full max-w-2xl">
+        <form onSubmit={capture}>
+          <LayerCard>
+            <LayerCard.Secondary>网页 URL</LayerCard.Secondary>
+            <LayerCard.Primary>
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+                <input
+                  type="url"
+                  required
+                  value={url}
+                  onChange={e => setUrl(e.target.value)}
+                  placeholder="https://afdian.com/a/liuyuhe666"
+                  className="min-w-0 flex-1 rounded-lg bg-kumo-control px-3.5 py-2.5 text-sm text-kumo-default ring ring-kumo-line transition-[box-shadow] outline-none placeholder:text-kumo-subtle focus:ring-[1.5px] focus:ring-kumo-focus"
+                />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  loading={loading}
+                  disabled={loading}
+                >
+                  <Camera className="h-4 w-4" />
+                  {loading ? '截图中' : '截图'}
+                </Button>
+              </div>
+              <Checkbox
+                label="截图完整滚动页面"
+                checked={fullPage}
+                onCheckedChange={setFullPage}
+              />
+            </LayerCard.Primary>
+          </LayerCard>
+        </form>
+
+        {error
+          ? (
+              <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-100">
+                {error}
+              </p>
+            )
+          : null}
+
+        <ResultFrame loading={loading}>
+          {imgUrl
+            ? (
+                <figure className="flex flex-col gap-3">
+                  <img
+                    src={imgUrl}
+                    alt="Screenshot result"
+                    className="img-outline w-full rounded-xl"
+                  />
+                  <figcaption className="flex items-center justify-between text-sm text-kumo-subtle">
+                    {ms !== null
+                      ? (
+                          <span>
+                            耗时
+                            {' '}
+                            <span className="tnum font-medium text-kumo-default">
+                              {(ms / 1000).toFixed(2)}
+                              s
+                            </span>
+                          </span>
+                        )
+                      : (
+                          <span />
+                        )}
+                    <a
+                      href={imgUrl}
+                      download="screenshot.png"
+                      className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 font-medium text-kumo-subtle transition-colors hover:text-kumo-default active:scale-[0.96]"
+                    >
+                      <Download className="h-4 w-4" />
+                      下载图片
+                    </a>
+                  </figcaption>
+                </figure>
+              )
+            : null}
+        </ResultFrame>
+      </div>
+    </div>
+  )
+}
+
+function ResultFrame({
+  loading,
+  children,
+}: {
+  loading: boolean
+  children: React.ReactNode
+}) {
+  const hasContent = Boolean(children) && !loading
+
+  if (loading) {
+    return (
+      <div className="grid min-h-64 place-items-center rounded-xl bg-kumo-tint ring-1 ring-kumo-hairline">
+        <div className="flex flex-col items-center gap-3 text-kumo-subtle">
+          <span className="h-7 w-7 animate-spin rounded-full border-2 border-kumo-fill border-t-orange-500" />
+          <span className="text-sm">处理中</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!hasContent) {
+    return (
+      <div className="grid min-h-64 place-items-center rounded-xl bg-kumo-tint ring-1 ring-kumo-hairline">
+        <div className="flex flex-col items-center gap-2 text-kumo-subtle">
+          <ImageIcon className="h-7 w-7" strokeWidth={1.75} />
+          <span className="text-sm">你的截图将显示在这里</span>
+        </div>
+      </div>
+    )
+  }
+
+  return <div className="rounded-xl">{children}</div>
 }
