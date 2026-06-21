@@ -6,8 +6,10 @@ import { LayerCard } from '@cloudflare/kumo/components/layer-card'
 import { Camera, Download, ImageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
+const DEFAULT_URL = 'https://github.com/liuyuhe666'
+
 export default function Home() {
-  const [url, setUrl] = useState('https://cloudflare.com')
+  const [url, setUrl] = useState(DEFAULT_URL)
   const [fullPage, setFullPage] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -22,7 +24,7 @@ export default function Home() {
     }
   }, [])
 
-  async function capture(e: React.FormEvent) {
+  async function capture(e: React.SubmitEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
@@ -68,7 +70,6 @@ export default function Home() {
                   required
                   value={url}
                   onChange={e => setUrl(e.target.value)}
-                  placeholder="https://cloudflare.com"
                   className="min-w-0 flex-1 rounded-lg bg-kumo-control px-3.5 py-2.5 text-sm text-kumo-default ring ring-kumo-line transition-[box-shadow] outline-none placeholder:text-kumo-subtle focus:ring-[1.5px] focus:ring-kumo-focus"
                 />
                 <Button

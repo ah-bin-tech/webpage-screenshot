@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       url,
       viewport: { width: 1920, height: 1080 },
       screenshotOptions: { fullPage },
-      gotoOptions: { waitUntil: 'networkidle2', timeout: 30000 },
+      gotoOptions: { waitUntil: 'load', timeout: 30000 },
     })
 
     if (!res.ok) {
